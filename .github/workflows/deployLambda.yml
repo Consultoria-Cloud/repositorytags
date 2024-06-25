@@ -6,7 +6,7 @@ on:
       - "src/**"
     branches: [ prod, dev, staging ]
     tags:
-      - 1.*
+      - v1.*
   pull_request:
     branches: [ prod, dev, staging ]
 
@@ -35,7 +35,7 @@ jobs:
       - name: Deploy to AWS Lambda
         run: | 
           aws lambda update-function-code \
-          --function-name arn:aws:lambda:us-east-1:454362774081:function:SIMPLE_LAMBDA_CICD \
+          --function-name ${{ secrets.AWS_ARN_LAMBDA }} \
           --zip-file=fileb://src/code.zip
   
   staging:
@@ -63,10 +63,11 @@ jobs:
       - name: Deploy to AWS Lambda
         run: | 
           aws lambda update-function-code \
-          --function-name arn:aws:lambda:us-east-1:454362774081:function:SIMPLE_LAMBDA_CICD \
+          --function-name ${{ secrets.AWS_ARN_LAMBDA }} \
           --zip-file=fileb://src/code.zip
   
   prod:
+    name: Enviroment Production
     runs-on: ubuntu-latest
     needs: 
       - dev
@@ -74,6 +75,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      
+      - name: Create Release
+        id: prod
+        uses: actions/create-release@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Changes in this Release
+            - First Change
+            - Second Change
+          draft: false
+          prerelease: false
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -92,5 +108,5 @@ jobs:
       - name: Deploy to AWS Lambda
         run: | 
           aws lambda update-function-code \
-          --function-name arn:aws:lambda:us-east-1:454362774081:function:SIMPLE_LAMBDA_CICD \
+          --function-name ${{ secrets.AWS_ARN_LAMBDA }} \
           --zip-file=fileb://src/code.zip
