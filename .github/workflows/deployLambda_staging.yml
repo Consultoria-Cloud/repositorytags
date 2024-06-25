@@ -4,11 +4,11 @@ on:
   push:
     paths:
       - "src/**"
-    branches: [ dev, staging ]
+    branches: [ staging ]
     tags:
       - v1.*
   pull_request:
-    branches: [ dev, staging ]
+    branches: [ staging ]
 
 jobs:
   staging:
